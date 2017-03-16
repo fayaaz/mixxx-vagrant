@@ -71,6 +71,7 @@
     command: "scons prefix=/opt/mixxx/ -j12 install"
     args:
       chdir: "/opt/mixxx_code/"
+      creates: "/opt/mixxx/bin/mixxx"
 
   - name: Ensure all frontend packages are installed
     apt:
@@ -79,14 +80,21 @@
     with_items:
     - xorg
     - openbox
+    - gdm
 
   - name: Set autologin
     copy:
       dest: /etc/lightdm/lightdm.conf.d/50-user-login.conf
       content: autologin.conf
 
+  - name: Create config dirs
+    file:
+      path: "/home/ubuntu/.config/openbox/"
+      state: directory
+      recurse: yes
+
+
   - name: Autostart Mixxx on openbox
-    lineinfile:
-      path: /home/ubuntu/.config/openbox/autostart
-      regexp: '^/opt/mixxx/'
-      line: '/opt/mixxx/bin/mixxx'
+    copy:
+      dest: /home/ubuntu/.config/openbox/autostart
+      content: autostart.sh

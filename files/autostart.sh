@@ -1,0 +1,1 @@
+/opt/mixxx/bin/mixxx
