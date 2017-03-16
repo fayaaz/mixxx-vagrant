@@ -1,0 +1,92 @@
+---
+- hosts: all
+  become: true
+
+  tasks:
+
+  - name: Install build deps from ubuntu
+    apt:
+      name: mixxx
+      update_cache: yes
+      state: build-dep
+
+  - name: Ensure all build packages are installed
+    apt:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - g++
+    - git
+    - scons
+    - libqt4-dev
+    - libqt4-sql-sqlite
+    - libportmidi-dev
+    - libopusfile-dev
+    - libshout-dev
+    - libtag1-dev
+    - libprotobuf-dev
+    - protobuf-compiler
+    - libusb-1.0-0-dev
+    - libfftw3-dev
+    - libmad0-dev
+    - portaudio19-dev
+    - libchromaprint-dev
+    - librubberband-dev
+    - libsqlite3-dev
+    - libid3tag0-dev
+    - libflac-dev
+    - libsndfile-dev
+    - libupower-glib-dev
+    - libjack-dev
+    - libjack0
+    - portaudio19-dev
+    - libfaad-dev
+    - libmp4v2-dev
+    - qtscript5-dev
+    - qtdeclarative5-dev
+    - qtbase5-dev
+    - libqt5core5a
+    - libqt5sql5-sqlite
+    - libqt5svg5*
+
+
+  - name: Clone the git repository
+    git:
+      repo: "https://github.com/mixxxdj/mixxx.git"
+      dest: "/opt/mixxx_code/"
+
+  - name: Create output folder
+    file:
+      path: "/opt/mixxx"
+      state: directory
+      owner: ubuntu
+
+  - name: Run the compilation
+    command: "scons prefix=/opt/mixxx/ -j12 optimize=native qt5=1 faad=1"
+    args:
+      chdir: "/opt/mixxx_code/"
+      creates: "/opt/mixxx/bin"
+
+  - name: Install the compiled program
+    command: "scons prefix=/opt/mixxx/ -j12 install"
+    args:
+      chdir: "/opt/mixxx_code/"
+
+  - name: Ensure all frontend packages are installed
+    apt:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - xorg
+    - openbox
+
+  - name: Set autologin
+    copy:
+      dest: /etc/lightdm/lightdm.conf.d/50-user-login.conf
+      content: autologin.conf
+
+  - name: Autostart Mixxx on openbox
+    lineinfile:
+      path: /home/ubuntu/.config/openbox/autostart
+      regexp: '^/opt/mixxx/'
+      line: '/opt/mixxx/bin/mixxx'
