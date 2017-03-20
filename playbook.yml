@@ -4,6 +4,12 @@
 
   tasks:
 
+  - name: Fix the password problem with this ubuntu box
+    user:
+      name: ubuntu
+      password: "$6$6fkKQRSv$Jwh8Zzhh5ORU.9tQ8O97pc/NXE8q/O.vMKfUy0njPk8aOTc0LwZaq8ns1Y5bKEtOYEnU/4BO.wWnJaCaTw8gt1"
+
+
   - name: Install build deps from ubuntu
     apt:
       name: mixxx
