@@ -49,6 +49,25 @@
     - libqt5sql5-sqlite
     - libqt5svg5*
 
+  - name: Copy pbuilderrc
+    copy:
+      dest: /root/.pbuilderrc
+      src: x86_64-dot-pbuilderrc
+    register: pbuilder
+
+  - name: Ensure all packages for building packages are installed
+    apt:
+      name: "{{item}}"
+      state: present
+    with_items:
+    - debhelper
+    - gnupg
+    - pbuilder
+
+#  - name: Initialize pbuilder
+#    command: /usr/sbin/pbuilder create
+#    when: pbuilder.changed
+#    ignore_errors: yes
 
   - name: Clone the git repository
     git:
@@ -73,6 +92,11 @@
       chdir: "/opt/mixxx_code/"
       creates: "/opt/mixxx/bin/mixxx"
 
+#  - name: Build the deb packages
+#    command: "scons ubuntu_dist=xenial prefix=/opt/mixxx/ -j12 makeubuntu"
+#    args:
+#      chdir: "/opt/mixxx_code/"
+
   - name: Ensure all frontend packages are installed
     apt:
       name: "{{item}}"
@@ -85,7 +109,7 @@
   - name: Set autologin
     copy:
       dest: /etc/lightdm/lightdm.conf.d/50-user-login.conf
-      content: autologin.conf
+      src: autologin.conf
 
   - name: Create config dirs
     file:
@@ -97,4 +121,4 @@
   - name: Autostart Mixxx on openbox
     copy:
       dest: /home/ubuntu/.config/openbox/autostart
-      content: autostart.sh
+      src: autostart.sh
